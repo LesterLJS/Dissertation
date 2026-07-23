@@ -15,6 +15,9 @@ OLD_PUBLIC_NOTEBOOK = ROOT / "notebooks" / "dataset_overview_public.ipynb"
 ENGLISH_NOTEBOOK = ROOT / "notebooks" / "dataset_overview_en.ipynb"
 CHINESE_NOTEBOOK = ROOT / "notebooks" / "dataset_overview_zh.ipynb"
 LOCAL_NOTEBOOK = ROOT / "notebooks" / "dataset_audit_local.ipynb"
+LOCAL_EXECUTED_NOTEBOOK = (
+    ROOT / ".local-notebooks" / "dataset_audit_with_output.ipynb"
+)
 ENGLISH_GUIDE = ROOT / "DATASET.md"
 CHINESE_GUIDE = ROOT / "DATASET.zh-CN.md"
 CONDA_ENVIRONMENT = ROOT / "environment.yml"
@@ -272,6 +275,38 @@ class NotebookOutputTest(unittest.TestCase):
 
         self.assertIn("All displayed option contracts are synthetic.", english_outputs)
         self.assertIn("所有展示的期权合约均为合成记录。", chinese_outputs)
+
+
+class LocalMeetingNotebookTest(unittest.TestCase):
+    def test_local_execution_is_ignored_and_untracked(self):
+        ignore_text = (ROOT / ".gitignore").read_text(encoding="utf-8")
+        tracked = subprocess.run(
+            ["git", "ls-files"],
+            cwd=ROOT,
+            check=True,
+            capture_output=True,
+            text=True,
+        ).stdout.splitlines()
+
+        self.assertIn("/.local-notebooks/", ignore_text)
+        self.assertNotIn(
+            ".local-notebooks/dataset_audit_with_output.ipynb",
+            tracked,
+        )
+
+    def test_local_executed_copy_exists_and_contains_outputs(self):
+        self.assertTrue(LOCAL_EXECUTED_NOTEBOOK.is_file())
+        if not LOCAL_EXECUTED_NOTEBOOK.is_file():
+            return
+        notebook = json.loads(
+            LOCAL_EXECUTED_NOTEBOOK.read_text(encoding="utf-8")
+        )
+        code_cells = [
+            cell for cell in notebook["cells"] if cell["cell_type"] == "code"
+        ]
+
+        self.assertTrue(code_cells)
+        self.assertTrue(any(cell.get("outputs") for cell in code_cells))
 
 
 class RepositorySafetyTest(unittest.TestCase):

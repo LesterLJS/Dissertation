@@ -16,6 +16,9 @@ venv/
 # Interrupted aggregate-profile writes
 docs/data/*.tmp
 
+# Executed notebook containing licensed real-row previews
+/.local-notebooks/
+
 # Editor and operating-system files
 .DS_Store
 .vscode/
