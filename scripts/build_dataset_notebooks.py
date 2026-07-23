@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Build deterministic repository-safe dataset presentation notebooks."""
+"""Build deterministic bilingual dataset presentation notebooks."""
 
 from __future__ import annotations
 
@@ -9,6 +9,11 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 NOTEBOOK_DIR = ROOT / "notebooks"
+KERNELSPEC = {
+    "display_name": "Python (dissertation-display)",
+    "language": "python",
+    "name": "dissertation-display",
+}
 
 
 def _source(text: str) -> list[str]:
@@ -35,242 +40,290 @@ def code_cell(cell_id: str, code: str) -> dict:
     }
 
 
-def notebook(cells: list[dict]) -> dict:
+def notebook(cells: list[dict], language: str) -> dict:
     return {
         "cells": cells,
         "metadata": {
-            "kernelspec": {
-                "display_name": "Python 3",
-                "language": "python",
-                "name": "python3",
-            },
-            "language_info": {"name": "python", "version": "3"},
+            "dataset_language": language,
+            "kernelspec": KERNELSPEC,
+            "language_info": {"name": "python", "version": "3.12"},
         },
         "nbformat": 4,
         "nbformat_minor": 5,
     }
 
 
-def public_notebook() -> dict:
-    return notebook(
-        [
-            markdown_cell(
-                "public-intro",
-                """
-# Dissertation dataset overview
+PUBLIC_TEXT = {
+    "en": {
+        "title": """
+# Dataset overview
 
-This notebook presents repository-safe metadata and a fully synthetic option
-sample. It does **not** contain or download licensed OptionMetrics records.
-
-# 论文数据集概览
-
-本 Notebook 仅展示可公开的汇总元数据和完全合成的期权样本，不包含、下载或
-复制任何受许可保护的 OptionMetrics 原始记录。
+This executed notebook presents the four dissertation datasets using
+repository-safe aggregate statistics and fully synthetic option records.
+Licensed OptionMetrics rows are never loaded here.
 """,
-            ),
-            code_cell(
-                "public-locate",
-                """
+        "coverage": """
+## Coverage and scale
+
+The table below is generated from the aggregate-only profile.
+""",
+        "quality": """
+## Data quality
+
+Missingness is calculated from per-column missing counts in the aggregate
+profile. No source row is required.
+""",
+        "dictionary": """
+## Data dictionary
+
+The first entries illustrate how source fields are used in the dissertation.
+""",
+        "synthetic": """
+## Synthetic option example
+
+Every contract below is invented and marked `synthetic_only`.
+""",
+        "smile": """
+## Illustrative volatility smile
+
+This figure is generated only from the synthetic example and is not an
+empirical result.
+""",
+    },
+    "zh": {
+        "title": """
+# 数据集概览
+
+本已执行 Notebook 使用可公开的汇总统计和完全合成的期权记录展示论文的四张
+数据表，不会在此加载受许可保护的 OptionMetrics 真实记录。
+""",
+        "coverage": """
+## 覆盖范围与规模
+
+下表仅根据不含单条观测的汇总概况生成。
+""",
+        "quality": """
+## 数据质量
+
+缺失率根据汇总概况中的逐列缺失数量计算，不需要读取任何原始记录。
+""",
+        "dictionary": """
+## 数据字典
+
+以下条目说明主要源字段及其在论文中的用途。
+""",
+        "synthetic": """
+## 合成期权示例
+
+以下所有合约均为人工构造，并标记为 `synthetic_only`。
+""",
+        "smile": """
+## 波动率微笑示意
+
+该图只使用合成示例生成，不属于论文的实证结果。
+""",
+    },
+}
+
+
+PUBLIC_CODE = [
+    (
+        "public-setup",
+        """
 from pathlib import Path
-import csv
-import html
 import json
-
-try:
-    from IPython.display import Markdown, SVG, display
-except ModuleNotFoundError:
-    class Markdown(str):
-        pass
-
-    class SVG(str):
-        pass
-
-    def display(value):
-        print(str(value))
+import os
+import pandas as pd
+import matplotlib.pyplot as plt
+from IPython.display import display
 
 
 def find_repository_root():
     for candidate in (Path.cwd(), *Path.cwd().parents):
-        if (candidate / "examples" / "synthetic_option_data.csv").is_file():
+        if (candidate / "docs" / "data" / "dataset_profile.json").is_file():
             return candidate
     raise FileNotFoundError("Run this notebook from inside the repository.")
 
 
 ROOT = find_repository_root()
-PROFILE_PATH = ROOT / "docs" / "data" / "dataset_profile.json"
-SYNTHETIC_PATH = ROOT / "examples" / "synthetic_option_data.csv"
+LANGUAGE = os.environ.get("DATASET_NOTEBOOK_LANGUAGE", "en")
+if LANGUAGE not in {"en", "zh"}:
+    raise ValueError("DATASET_NOTEBOOK_LANGUAGE must be 'en' or 'zh'")
+
+LABELS = {
+    "en": {
+        "table": "Table",
+        "rows": "Rows",
+        "period": "Observation period",
+        "size": "Size (MiB)",
+        "columns": "Columns",
+        "missing": "Overall missing cells (%)",
+        "date": "Date",
+        "symbol": "Symbol",
+        "type": "Type",
+        "strike": "Strike",
+        "iv": "Synthetic IV",
+        "chart_title": "Synthetic volatility smile",
+        "x_axis": "Strike",
+        "y_axis": "Implied volatility",
+        "notice": "All displayed option contracts are synthetic.",
+    },
+    "zh": {
+        "table": "数据表",
+        "rows": "行数",
+        "period": "观测区间",
+        "size": "大小（MiB）",
+        "columns": "列数",
+        "missing": "总体缺失单元格（%）",
+        "date": "日期",
+        "symbol": "合约代码",
+        "type": "类型",
+        "strike": "执行价",
+        "iv": "合成隐含波动率",
+        "chart_title": "合成波动率微笑",
+        "x_axis": "执行价",
+        "y_axis": "隐含波动率",
+        "notice": "所有展示的期权合约均为合成记录。",
+    },
+}
+labels = LABELS[LANGUAGE]
+profile = json.loads(
+    (ROOT / "docs" / "data" / "dataset_profile.json").read_text(encoding="utf-8")
+)
+dictionary_path = ROOT / "docs" / "data" / (
+    "data_dictionary_en.csv" if LANGUAGE == "en" else "data_dictionary_zh.csv"
+)
+synthetic_path = ROOT / "examples" / "synthetic_option_data.csv"
 """,
-            ),
-            markdown_cell(
-                "public-profile-heading",
-                """
-## Aggregate profile / 汇总概况
-
-The profile contains file-level counts, date ranges, missing-value counts, and
-selected numeric summaries only. It contains no individual observations.
-
-该概况仅包含文件级行数、日期范围、缺失值数量和部分数值摘要，不包含单条观测。
-""",
-            ),
-            code_cell(
-                "public-profile",
-                """
-if PROFILE_PATH.is_file():
-    profile = json.loads(PROFILE_PATH.read_text(encoding="utf-8"))
-    lines = [
-        "| Table | Rows | Period | Size (MiB) |",
-        "|---|---:|---|---:|",
-    ]
-    for name, table in profile["tables"].items():
-        period = f'{table["date_range"]["min"]} to {table["date_range"]["max"]}'
-        size_mib = table["file_size_bytes"] / (1024 ** 2)
-        lines.append(f'| {name} | {table["row_count"]:,} | {period} | {size_mib:,.2f} |')
-    display(Markdown("\\n".join(lines)))
-else:
-    display(Markdown(
-        "**Aggregate profile not generated yet.** Run "
-        "`python3 scripts/profile_datasets.py --data-dir data "
-        "--output docs/data/dataset_profile.json` locally."
-    ))
-""",
-            ),
-            markdown_cell(
-                "public-synthetic-heading",
-                """
-## Synthetic option sample / 合成期权样本
-
-Every row below is invented for demonstration. The `synthetic_only` marker and
-2030 dates distinguish it from the dissertation extracts.
-
-以下记录均为演示而人工构造；`synthetic_only` 标志和 2030 年日期用于明确区分
-论文使用的真实提取数据。
-""",
-            ),
-            code_cell(
-                "public-load-synthetic",
-                """
-with SYNTHETIC_PATH.open("r", encoding="utf-8", newline="") as handle:
-    synthetic_rows = list(csv.DictReader(handle))
-
-preview_fields = ["date", "symbol", "cp_flag", "strike_price", "impl_volatility"]
-lines = [
-    "| Date | Symbol | Type | Strike | Synthetic IV |",
-    "|---|---|:---:|---:|---:|",
-]
-for row in synthetic_rows:
-    strike = float(row["strike_price"]) / 1000
-    lines.append(
-        f'| {row["date"]} | {row["symbol"]} | {row["cp_flag"]} | '
-        f'{strike:,.0f} | {float(row["impl_volatility"]):.1%} |'
-    )
-display(Markdown("\\n".join(lines)))
-""",
-            ),
-            markdown_cell(
-                "public-smile-heading",
-                """
-## Illustrative volatility smile / 波动率微笑示意
-
-The chart is generated from the synthetic rows and is not an empirical result.
-
-该图完全由合成记录生成，不属于论文的实证结果。
-""",
-            ),
-            code_cell(
-                "public-smile",
-                """
-points = sorted(
+    ),
     (
-        float(row["strike_price"]) / 1000,
-        float(row["impl_volatility"]),
-    )
-    for row in synthetic_rows
-)
-width, height = 700, 360
-left, right, top, bottom = 70, 25, 35, 55
-x_min, x_max = min(x for x, _ in points), max(x for x, _ in points)
-y_min, y_max = 0.17, 0.26
-
-
-def x_pixel(value):
-    return left + (value - x_min) / (x_max - x_min) * (width - left - right)
-
-
-def y_pixel(value):
-    return top + (y_max - value) / (y_max - y_min) * (height - top - bottom)
-
-
-polyline = " ".join(f"{x_pixel(x):.1f},{y_pixel(y):.1f}" for x, y in points)
-circles = "".join(
-    f'<circle cx="{x_pixel(x):.1f}" cy="{y_pixel(y):.1f}" r="5" fill="#2563eb"/>'
-    for x, y in points
-)
-x_labels = "".join(
-    f'<text x="{x_pixel(x):.1f}" y="{height - 20}" text-anchor="middle" '
-    f'font-size="12">{x:,.0f}</text>'
-    for x, _ in points
-)
-y_ticks = [0.18, 0.20, 0.22, 0.24, 0.26]
-y_labels = "".join(
-    f'<text x="{left - 10}" y="{y_pixel(y) + 4:.1f}" text-anchor="end" '
-    f'font-size="12">{y:.0%}</text>'
-    for y in y_ticks
-)
-svg = f'''
-<svg xmlns="http://www.w3.org/2000/svg" width="{width}" height="{height}">
-  <rect width="100%" height="100%" fill="white"/>
-  <line x1="{left}" y1="{top}" x2="{left}" y2="{height-bottom}" stroke="#475569"/>
-  <line x1="{left}" y1="{height-bottom}" x2="{width-right}" y2="{height-bottom}" stroke="#475569"/>
-  <polyline points="{html.escape(polyline)}" fill="none" stroke="#2563eb" stroke-width="3"/>
-  {circles}
-  {x_labels}
-  {y_labels}
-  <text x="{width/2}" y="18" text-anchor="middle" font-size="16">Synthetic volatility smile</text>
-  <text x="{width/2}" y="{height-2}" text-anchor="middle" font-size="13">Strike</text>
-  <text x="16" y="{height/2}" text-anchor="middle" font-size="13"
-        transform="rotate(-90 16 {height/2})">Implied volatility</text>
-</svg>
-'''
-display(SVG(svg))
+        "public-coverage",
+        """
+coverage_rows = []
+for name, table in profile["tables"].items():
+    coverage_rows.append({
+        labels["table"]: name,
+        labels["rows"]: table["row_count"],
+        labels["period"]: (
+            f'{table["date_range"]["min"]} – {table["date_range"]["max"]}'
+        ),
+        labels["size"]: round(table["file_size_bytes"] / (1024 ** 2), 2),
+    })
+coverage = pd.DataFrame(coverage_rows)
+display(coverage.style.format({labels["rows"]: "{:,.0f}", labels["size"]: "{:,.2f}"}))
 """,
-            ),
-        ]
-    )
+    ),
+    (
+        "public-quality",
+        """
+quality_rows = []
+for name, table in profile["tables"].items():
+    total_cells = table["row_count"] * len(table["columns"])
+    missing_cells = sum(table["missing_counts"].values())
+    quality_rows.append({
+        labels["table"]: name,
+        labels["columns"]: len(table["columns"]),
+        labels["missing"]: 100 * missing_cells / total_cells if total_cells else 0,
+    })
+quality = pd.DataFrame(quality_rows)
+display(quality.style.format({labels["missing"]: "{:.3f}"}))
+""",
+    ),
+    (
+        "public-dictionary",
+        """
+dictionary = pd.read_csv(dictionary_path)
+display(dictionary.head(12))
+""",
+    ),
+    (
+        "public-synthetic",
+        """
+synthetic = pd.read_csv(synthetic_path)
+if not synthetic["symbol_flag"].eq("synthetic_only").all():
+    raise ValueError("Synthetic example contains an unmarked row")
+synthetic_view = pd.DataFrame({
+    labels["date"]: synthetic["date"],
+    labels["symbol"]: synthetic["symbol"],
+    labels["type"]: synthetic["cp_flag"],
+    labels["strike"]: synthetic["strike_price"] / 1000,
+    labels["iv"]: synthetic["impl_volatility"],
+})
+print(labels["notice"])
+display(synthetic_view.style.format({
+    labels["strike"]: "{:,.0f}",
+    labels["iv"]: "{:.1%}",
+}))
+""",
+    ),
+    (
+        "public-smile",
+        """
+smile = synthetic.assign(strike=synthetic["strike_price"] / 1000).sort_values("strike")
+fig, ax = plt.subplots(figsize=(8, 4.5))
+ax.plot(
+    smile["strike"],
+    smile["impl_volatility"],
+    color="#2563eb",
+    marker="o",
+    linewidth=2.5,
+)
+ax.set_title(labels["chart_title"])
+ax.set_xlabel(labels["x_axis"])
+ax.set_ylabel(labels["y_axis"])
+ax.yaxis.set_major_formatter(lambda value, position: f"{value:.0%}")
+ax.grid(alpha=0.25)
+fig.tight_layout()
+plt.show()
+""",
+    ),
+]
+
+
+def public_notebook(language: str) -> dict:
+    if language not in PUBLIC_TEXT:
+        raise ValueError("language must be 'en' or 'zh'")
+    text = PUBLIC_TEXT[language]
+    cells = [
+        markdown_cell("public-title", text["title"]),
+        code_cell(*PUBLIC_CODE[0]),
+        markdown_cell("public-coverage-heading", text["coverage"]),
+        code_cell(*PUBLIC_CODE[1]),
+        markdown_cell("public-quality-heading", text["quality"]),
+        code_cell(*PUBLIC_CODE[2]),
+        markdown_cell("public-dictionary-heading", text["dictionary"]),
+        code_cell(*PUBLIC_CODE[3]),
+        markdown_cell("public-synthetic-heading", text["synthetic"]),
+        code_cell(*PUBLIC_CODE[4]),
+        markdown_cell("public-smile-heading", text["smile"]),
+        code_cell(*PUBLIC_CODE[5]),
+    ]
+    return notebook(cells, language)
 
 
 def local_notebook() -> dict:
-    return notebook(
-        [
-            markdown_cell(
-                "local-intro",
-                """
-# Local dataset audit for supervision meetings
+    cells = [
+        markdown_cell(
+            "local-intro",
+            """
+# Local dataset audit / 本地数据检查
 
-This notebook reads the ignored local OptionMetrics extracts. Run it only on an
-authorised machine. Before committing, keep every code-cell output cleared.
+This template reads authorised local OptionMetrics files. Keep this tracked
+template output-free. Execute it only into the ignored `.local-notebooks/`
+directory.
 
-# 导师会议本地数据检查
-
-本 Notebook 读取已被 Git 忽略的本地 OptionMetrics 文件。仅应在获得授权的
-设备上运行；提交前必须清除全部代码单元输出。
+本模板读取获得授权的本地 OptionMetrics 文件。提交的模板必须保持无输出，并且
+只能将执行结果保存到被忽略的 `.local-notebooks/` 目录。
 """,
-            ),
-            code_cell(
-                "local-setup",
-                """
+        ),
+        code_cell(
+            "local-setup",
+            """
 from pathlib import Path
 import csv
 import itertools
 import json
-
-try:
-    from IPython.display import Markdown, display
-except ModuleNotFoundError:
-    class Markdown(str):
-        pass
-
-    def display(value):
-        print(str(value))
+from IPython.display import display
 
 
 def find_repository_root():
@@ -290,20 +343,16 @@ EXPECTED_FILES = [
     "security price.csv",
 ]
 """,
-            ),
-            markdown_cell(
-                "local-file-check-heading",
-                """
-## Local file check / 本地文件检查
-
-This cell reports file presence and size without reading individual rows.
-
-本单元仅报告文件是否存在及文件大小，不读取单条记录。
+        ),
+        markdown_cell(
+            "local-status-heading",
+            """
+## Local file status / 本地文件状态
 """,
-            ),
-            code_cell(
-                "local-file-check",
-                """
+        ),
+        code_cell(
+            "local-status",
+            """
 file_status = []
 for name in EXPECTED_FILES:
     path = DATA_DIR / name
@@ -312,23 +361,22 @@ for name in EXPECTED_FILES:
         "present": path.is_file(),
         "size_gib": round(path.stat().st_size / (1024 ** 3), 3) if path.is_file() else None,
     })
-file_status
+display(file_status)
 """,
-            ),
-            markdown_cell(
-                "local-preview-heading",
-                """
-## Temporary five-row preview / 临时五行预览
+        ),
+        markdown_cell(
+            "local-preview-heading",
+            """
+## Five-row licensed preview / 五行真实数据预览
 
-This output may contain licensed observations. Use it during the meeting and
-clear the notebook output before saving or committing.
+The output below is licensed and must never be committed.
 
-该输出可能包含受许可保护的真实观测。仅在会议中临时展示，保存或提交前必须清除。
+以下输出受数据许可保护，严禁提交。
 """,
-            ),
-            code_cell(
-                "local-preview",
-                """
+        ),
+        code_cell(
+            "local-preview",
+            """
 preview = {}
 for name in EXPECTED_FILES:
     path = DATA_DIR / name
@@ -338,56 +386,32 @@ for name in EXPECTED_FILES:
     with path.open("r", encoding="utf-8-sig", newline="") as handle:
         reader = csv.DictReader(handle)
         preview[name] = list(itertools.islice(reader, 5))
-preview
+display(preview)
 """,
-            ),
-            markdown_cell(
-                "local-profile-heading",
-                """
+        ),
+        markdown_cell(
+            "local-profile-heading",
+            """
 ## Aggregate profile / 汇总概况
-
-Generate or refresh the aggregate profile before the meeting:
-
-```bash
-python3 scripts/profile_datasets.py \
-  --data-dir data \
-  --output docs/data/dataset_profile.json \
-  --batch-size 100000
-```
 """,
-            ),
-            code_cell(
-                "local-profile",
-                """
-if not PROFILE_PATH.is_file():
-    display(Markdown("Run the profiling command above before the meeting."))
-else:
-    profile = json.loads(PROFILE_PATH.read_text(encoding="utf-8"))
-    summary = {
-        name: {
-            "rows": table["row_count"],
-            "date_range": table["date_range"],
-            "columns": len(table["columns"]),
-        }
-        for name, table in profile["tables"].items()
+        ),
+        code_cell(
+            "local-profile",
+            """
+profile = json.loads(PROFILE_PATH.read_text(encoding="utf-8"))
+summary = {
+    name: {
+        "rows": table["row_count"],
+        "date_range": table["date_range"],
+        "columns": len(table["columns"]),
     }
-    summary
+    for name, table in profile["tables"].items()
+}
+display(summary)
 """,
-            ),
-            markdown_cell(
-                "local-cleanup",
-                """
-## Before committing / 提交前
-
-Use **Kernel → Restart & Clear Output**, save the notebook, and confirm that
-every code cell has an empty `outputs` list.
-
-请选择 **Kernel → Restart & Clear Output**，保存后确认所有代码单元的
-`outputs` 均为空。
-""",
-            ),
-        ]
-    )
+        ),
+    ]
+    return notebook(cells, "local")
 
 
 def write_notebook(path: Path, content: dict) -> None:
@@ -399,14 +423,18 @@ def write_notebook(path: Path, content: dict) -> None:
 
 def main() -> None:
     write_notebook(
-        NOTEBOOK_DIR / "dataset_overview_public.ipynb",
-        public_notebook(),
+        NOTEBOOK_DIR / "dataset_overview_en.ipynb",
+        public_notebook("en"),
+    )
+    write_notebook(
+        NOTEBOOK_DIR / "dataset_overview_zh.ipynb",
+        public_notebook("zh"),
     )
     write_notebook(
         NOTEBOOK_DIR / "dataset_audit_local.ipynb",
         local_notebook(),
     )
-    print("Built 2 dataset notebooks with cleared outputs.")
+    print("Built English, Chinese, and local dataset notebooks with cleared outputs.")
 
 
 if __name__ == "__main__":

@@ -1,6 +1,4 @@
-import contextlib
 import csv
-import io
 import json
 import subprocess
 import unittest
@@ -13,7 +11,9 @@ ROOT = Path(__file__).resolve().parents[1]
 ENGLISH_DICTIONARY = ROOT / "docs" / "data" / "data_dictionary_en.csv"
 CHINESE_DICTIONARY = ROOT / "docs" / "data" / "data_dictionary_zh.csv"
 SYNTHETIC_OPTIONS = ROOT / "examples" / "synthetic_option_data.csv"
-PUBLIC_NOTEBOOK = ROOT / "notebooks" / "dataset_overview_public.ipynb"
+OLD_PUBLIC_NOTEBOOK = ROOT / "notebooks" / "dataset_overview_public.ipynb"
+ENGLISH_NOTEBOOK = ROOT / "notebooks" / "dataset_overview_en.ipynb"
+CHINESE_NOTEBOOK = ROOT / "notebooks" / "dataset_overview_zh.ipynb"
 LOCAL_NOTEBOOK = ROOT / "notebooks" / "dataset_audit_local.ipynb"
 ENGLISH_GUIDE = ROOT / "DATASET.md"
 CHINESE_GUIDE = ROOT / "DATASET.zh-CN.md"
@@ -102,28 +102,77 @@ class NotebookSafetyTest(unittest.TestCase):
             return None
         return json.loads(path.read_text(encoding="utf-8"))
 
-    def test_both_notebooks_are_valid_v4_and_have_no_saved_outputs(self):
-        for path in (PUBLIC_NOTEBOOK, LOCAL_NOTEBOOK):
+    @staticmethod
+    def _code_sources(notebook):
+        return [
+            "".join(cell["source"])
+            for cell in notebook["cells"]
+            if cell["cell_type"] == "code"
+        ]
+
+    def test_language_notebooks_exist_and_old_public_notebook_is_removed(self):
+        self.assertTrue(ENGLISH_NOTEBOOK.is_file())
+        self.assertTrue(CHINESE_NOTEBOOK.is_file())
+        self.assertFalse(OLD_PUBLIC_NOTEBOOK.exists())
+
+    def test_notebooks_are_valid_v4_with_display_kernel(self):
+        for path in (ENGLISH_NOTEBOOK, CHINESE_NOTEBOOK, LOCAL_NOTEBOOK):
             with self.subTest(path=path.name):
                 notebook = self._load_notebook(path)
                 if notebook is None:
                     continue
                 self.assertEqual(notebook["nbformat"], 4)
-                code_cells = [
-                    cell for cell in notebook["cells"] if cell["cell_type"] == "code"
-                ]
-                self.assertTrue(code_cells)
-                self.assertTrue(
-                    all(cell.get("outputs", []) == [] for cell in code_cells)
-                )
-                self.assertTrue(
-                    all(cell.get("execution_count") is None for cell in code_cells)
-                )
                 ids = [cell["id"] for cell in notebook["cells"]]
                 self.assertEqual(len(ids), len(set(ids)))
+                self.assertEqual(
+                    notebook["metadata"]["kernelspec"]["name"],
+                    "dissertation-display",
+                )
+
+    def test_language_notebooks_share_identical_code(self):
+        english = self._load_notebook(ENGLISH_NOTEBOOK)
+        chinese = self._load_notebook(CHINESE_NOTEBOOK)
+        if english is None or chinese is None:
+            return
+
+        self.assertEqual(self._code_sources(english), self._code_sources(chinese))
+        english_markdown = "\n".join(
+            "".join(cell["source"])
+            for cell in english["cells"]
+            if cell["cell_type"] == "markdown"
+        )
+        chinese_markdown = "\n".join(
+            "".join(cell["source"])
+            for cell in chinese["cells"]
+            if cell["cell_type"] == "markdown"
+        )
+        self.assertIn("Dataset overview", english_markdown)
+        self.assertIn("数据集概览", chinese_markdown)
+
+    def test_builder_creates_output_free_notebook_templates(self):
+        from scripts.build_dataset_notebooks import local_notebook, public_notebook
+
+        try:
+            generated = [
+                public_notebook("en"),
+                public_notebook("zh"),
+                local_notebook(),
+            ]
+        except TypeError as exc:
+            self.fail(f"language-aware notebook builder is not implemented: {exc}")
+
+        for notebook in generated:
+            code_cells = [
+                cell for cell in notebook["cells"] if cell["cell_type"] == "code"
+            ]
+            self.assertTrue(code_cells)
+            self.assertTrue(all(cell.get("outputs", []) == [] for cell in code_cells))
+            self.assertTrue(
+                all(cell.get("execution_count") is None for cell in code_cells)
+            )
 
     def test_notebooks_contain_no_absolute_path_or_real_row_fragment(self):
-        for path in (PUBLIC_NOTEBOOK, LOCAL_NOTEBOOK):
+        for path in (ENGLISH_NOTEBOOK, CHINESE_NOTEBOOK, LOCAL_NOTEBOOK):
             with self.subTest(path=path.name):
                 notebook = self._load_notebook(path)
                 if notebook is None:
@@ -133,45 +182,28 @@ class NotebookSafetyTest(unittest.TestCase):
                 self.assertNotIn("098A3.1A", encoded)
                 self.assertNotIn("64881510", encoded)
 
-    def test_public_notebook_uses_only_repository_safe_inputs(self):
-        notebook = self._load_notebook(PUBLIC_NOTEBOOK)
-        if notebook is None:
-            return
-        code = "\n".join(
-            "".join(cell["source"])
-            for cell in notebook["cells"]
-            if cell["cell_type"] == "code"
-        )
-
-        self.assertNotIn('Path("data")', code)
-        self.assertIn("synthetic_option_data.csv", code)
-        self.assertIn("dataset_profile.json", code)
-
-    def test_public_notebook_executes_without_optional_packages(self):
-        notebook = self._load_notebook(PUBLIC_NOTEBOOK)
-        if notebook is None:
-            return
-        namespace = {}
-        with contextlib.redirect_stdout(io.StringIO()):
-            for index, cell in enumerate(notebook["cells"], start=1):
-                if cell["cell_type"] != "code":
+    def test_public_notebooks_use_only_repository_safe_inputs(self):
+        for path in (ENGLISH_NOTEBOOK, CHINESE_NOTEBOOK):
+            with self.subTest(path=path.name):
+                notebook = self._load_notebook(path)
+                if notebook is None:
                     continue
-                source = "".join(cell["source"])
-                exec(
-                    compile(source, f"{PUBLIC_NOTEBOOK.name} cell {index}", "exec"),
-                    namespace,
-                )
+                code = "\n".join(self._code_sources(notebook))
 
-    def test_local_notebook_limits_live_preview_to_five_rows(self):
+                self.assertNotIn('Path("data")', code)
+                self.assertIn("synthetic_option_data.csv", code)
+                self.assertIn("dataset_profile.json", code)
+
+    def test_local_notebook_is_output_free_and_limits_preview_to_five_rows(self):
         notebook = self._load_notebook(LOCAL_NOTEBOOK)
         if notebook is None:
             return
-        code = "\n".join(
-            "".join(cell["source"])
-            for cell in notebook["cells"]
-            if cell["cell_type"] == "code"
-        )
+        code_cells = [
+            cell for cell in notebook["cells"] if cell["cell_type"] == "code"
+        ]
+        code = "\n".join(self._code_sources(notebook))
 
+        self.assertTrue(all(cell.get("outputs", []) == [] for cell in code_cells))
         self.assertIn("itertools.islice(reader, 5)", code)
         self.assertIn('Path("data")', code)
 
