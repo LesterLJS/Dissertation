@@ -7,10 +7,14 @@
 
 # Local notebook and Python artifacts
 .ipynb_checkpoints/
+notebooks/.ipynb_checkpoints/
 __pycache__/
 *.py[cod]
 .venv/
 venv/
+
+# Interrupted aggregate-profile writes
+docs/data/*.tmp
 
 # Editor and operating-system files
 .DS_Store

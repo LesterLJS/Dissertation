@@ -1,5 +1,8 @@
+import contextlib
 import csv
+import io
 import json
+import subprocess
 import unittest
 from pathlib import Path
 
@@ -12,6 +15,8 @@ CHINESE_DICTIONARY = ROOT / "docs" / "data" / "data_dictionary_zh.csv"
 SYNTHETIC_OPTIONS = ROOT / "examples" / "synthetic_option_data.csv"
 PUBLIC_NOTEBOOK = ROOT / "notebooks" / "dataset_overview_public.ipynb"
 LOCAL_NOTEBOOK = ROOT / "notebooks" / "dataset_audit_local.ipynb"
+ENGLISH_GUIDE = ROOT / "DATASET.md"
+CHINESE_GUIDE = ROOT / "DATASET.zh-CN.md"
 
 
 def read_dictionary(path):
@@ -120,6 +125,21 @@ class NotebookSafetyTest(unittest.TestCase):
         self.assertIn("synthetic_option_data.csv", code)
         self.assertIn("dataset_profile.json", code)
 
+    def test_public_notebook_executes_without_optional_packages(self):
+        notebook = self._load_notebook(PUBLIC_NOTEBOOK)
+        if notebook is None:
+            return
+        namespace = {}
+        with contextlib.redirect_stdout(io.StringIO()):
+            for index, cell in enumerate(notebook["cells"], start=1):
+                if cell["cell_type"] != "code":
+                    continue
+                source = "".join(cell["source"])
+                exec(
+                    compile(source, f"{PUBLIC_NOTEBOOK.name} cell {index}", "exec"),
+                    namespace,
+                )
+
     def test_local_notebook_limits_live_preview_to_five_rows(self):
         notebook = self._load_notebook(LOCAL_NOTEBOOK)
         if notebook is None:
@@ -132,6 +152,53 @@ class NotebookSafetyTest(unittest.TestCase):
 
         self.assertIn("itertools.islice(reader, 5)", code)
         self.assertIn('Path("data")', code)
+
+
+class RepositorySafetyTest(unittest.TestCase):
+    def test_restricted_source_files_are_not_tracked(self):
+        tracked = subprocess.run(
+            ["git", "ls-files"],
+            cwd=ROOT,
+            check=True,
+            capture_output=True,
+            text=True,
+        ).stdout.splitlines()
+        restricted = [
+            path
+            for path in tracked
+            if path.startswith("data/")
+            or path.lower().endswith(".pdf")
+            or path.lower().endswith(".zip")
+        ]
+
+        self.assertEqual(restricted, [])
+
+    def test_ignore_rules_protect_local_and_temporary_materials(self):
+        ignore_text = (ROOT / ".gitignore").read_text(encoding="utf-8")
+
+        self.assertIn("/data/", ignore_text)
+        self.assertIn("*.pdf", ignore_text)
+        self.assertIn("*.zip", ignore_text)
+        self.assertIn(".ipynb_checkpoints/", ignore_text)
+        self.assertIn("docs/data/*.tmp", ignore_text)
+
+    def test_bilingual_guides_link_every_presentation_artifact(self):
+        required_paths = [
+            "docs/data/dataset_profile.json",
+            "docs/data/data_dictionary_en.csv",
+            "docs/data/data_dictionary_zh.csv",
+            "examples/synthetic_option_data.csv",
+            "notebooks/dataset_overview_public.ipynb",
+            "notebooks/dataset_audit_local.ipynb",
+        ]
+        for guide in (ENGLISH_GUIDE, CHINESE_GUIDE):
+            with self.subTest(guide=guide.name):
+                self.assertTrue(guide.is_file())
+                if not guide.is_file():
+                    continue
+                content = guide.read_text(encoding="utf-8")
+                for path in required_paths:
+                    self.assertIn(path, content)
 
 
 if __name__ == "__main__":

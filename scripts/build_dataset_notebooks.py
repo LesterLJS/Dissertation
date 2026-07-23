@@ -75,7 +75,18 @@ from pathlib import Path
 import csv
 import html
 import json
-from IPython.display import Markdown, SVG, display
+
+try:
+    from IPython.display import Markdown, SVG, display
+except ModuleNotFoundError:
+    class Markdown(str):
+        pass
+
+    class SVG(str):
+        pass
+
+    def display(value):
+        print(str(value))
 
 
 def find_repository_root():
@@ -251,7 +262,15 @@ from pathlib import Path
 import csv
 import itertools
 import json
-from IPython.display import Markdown, display
+
+try:
+    from IPython.display import Markdown, display
+except ModuleNotFoundError:
+    class Markdown(str):
+        pass
+
+    def display(value):
+        print(str(value))
 
 
 def find_repository_root():
