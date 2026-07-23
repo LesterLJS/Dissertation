@@ -1,0 +1,347 @@
+{
+  "missing_files": [],
+  "profile_version": 1,
+  "source": "Local licensed OptionMetrics extracts",
+  "tables": {
+    "Index Dividend Yield.csv": {
+      "columns": [
+        "secid",
+        "date",
+        "cusip",
+        "ticker",
+        "sic",
+        "index_flag",
+        "exchange_d",
+        "class",
+        "issue_type",
+        "industry_group",
+        "rate"
+      ],
+      "date_range": {
+        "max": "2025-08-29",
+        "min": "1996-01-04"
+      },
+      "file_name": "Index Dividend Yield.csv",
+      "file_size_bytes": 424159,
+      "missing_counts": {
+        "class": 7463,
+        "cusip": 0,
+        "date": 0,
+        "exchange_d": 0,
+        "index_flag": 0,
+        "industry_group": 7463,
+        "issue_type": 0,
+        "rate": 0,
+        "secid": 0,
+        "sic": 0,
+        "ticker": 0
+      },
+      "numeric_summary": {
+        "rate": {
+          "count": 7463,
+          "max": 2.857108,
+          "mean": 1.6814978917325483,
+          "min": 0.0
+        }
+      },
+      "row_count": 7463
+    },
+    "Zero Coupon Yield Curve.csv": {
+      "columns": [
+        "date",
+        "days",
+        "rate"
+      ],
+      "date_range": {
+        "max": "2025-08-29",
+        "min": "1996-01-02"
+      },
+      "file_name": "Zero Coupon Yield Curve.csv",
+      "file_size_bytes": 7420153,
+      "missing_counts": {
+        "date": 0,
+        "days": 0,
+        "rate": 0
+      },
+      "numeric_summary": {
+        "days": {
+          "count": 304301,
+          "max": 3669.0,
+          "mean": 1582.6037443189473,
+          "min": 1.0
+        },
+        "rate": {
+          "count": 304301,
+          "max": 7.981904,
+          "mean": 3.2876428191855926,
+          "min": 0.058684
+        }
+      },
+      "row_count": 304301
+    },
+    "option price.csv": {
+      "columns": [
+        "secid",
+        "date",
+        "symbol",
+        "symbol_flag",
+        "exdate",
+        "last_date",
+        "cp_flag",
+        "strike_price",
+        "best_bid",
+        "best_offer",
+        "volume",
+        "open_interest",
+        "impl_volatility",
+        "delta",
+        "gamma",
+        "vega",
+        "theta",
+        "optionid",
+        "cfadj",
+        "am_settlement",
+        "contract_size",
+        "ss_flag",
+        "forward_price",
+        "expiry_indicator",
+        "root",
+        "suffix",
+        "cusip",
+        "ticker",
+        "sic",
+        "index_flag",
+        "exchange_d",
+        "class",
+        "issue_type",
+        "industry_group",
+        "issuer",
+        "div_convention",
+        "exercise_style",
+        "am_set_flag"
+      ],
+      "date_range": {
+        "max": "2025-08-29",
+        "min": "1996-01-04"
+      },
+      "file_name": "option price.csv",
+      "file_size_bytes": 9867580999,
+      "missing_counts": {
+        "am_set_flag": 48335273,
+        "am_settlement": 0,
+        "best_bid": 0,
+        "best_offer": 0,
+        "cfadj": 0,
+        "class": 48335273,
+        "contract_size": 0,
+        "cp_flag": 0,
+        "cusip": 0,
+        "date": 0,
+        "delta": 5014730,
+        "div_convention": 0,
+        "exchange_d": 0,
+        "exdate": 0,
+        "exercise_style": 0,
+        "expiry_indicator": 26174338,
+        "forward_price": 48335273,
+        "gamma": 5014730,
+        "impl_volatility": 5014730,
+        "index_flag": 0,
+        "industry_group": 48335273,
+        "issue_type": 0,
+        "issuer": 0,
+        "last_date": 13456575,
+        "open_interest": 0,
+        "optionid": 0,
+        "root": 45897880,
+        "secid": 0,
+        "sic": 0,
+        "ss_flag": 0,
+        "strike_price": 0,
+        "suffix": 45897880,
+        "symbol": 0,
+        "symbol_flag": 0,
+        "theta": 5014730,
+        "ticker": 0,
+        "vega": 5014730,
+        "volume": 0
+      },
+      "numeric_summary": {
+        "best_bid": {
+          "count": 48335273,
+          "max": 6916.7,
+          "mean": 338.5502110285757,
+          "min": 0.0
+        },
+        "best_offer": {
+          "count": 48335273,
+          "max": 15054.2,
+          "mean": 343.35057366727006,
+          "min": 0.05
+        },
+        "contract_size": {
+          "count": 48335273,
+          "max": 100.0,
+          "mean": 100.0,
+          "min": 100.0
+        },
+        "delta": {
+          "count": 43320543,
+          "max": 0.999993,
+          "mean": 0.1508597170459777,
+          "min": -0.99999
+        },
+        "forward_price": {
+          "count": 0,
+          "max": null,
+          "mean": null,
+          "min": null
+        },
+        "gamma": {
+          "count": 43320543,
+          "max": 0.145008,
+          "mean": 0.0008935332831141887,
+          "min": 0.0
+        },
+        "impl_volatility": {
+          "count": 43320543,
+          "max": 8.966288,
+          "mean": 0.2986135830411786,
+          "min": 0.012643
+        },
+        "open_interest": {
+          "count": 48335273,
+          "max": 624873.0,
+          "mean": 1554.0835699014258,
+          "min": 0.0
+        },
+        "strike_price": {
+          "count": 48335273,
+          "max": 12000000.0,
+          "mean": 3278683.0293479464,
+          "min": 50000.0
+        },
+        "theta": {
+          "count": 43320543,
+          "max": 513.6066,
+          "mean": -202.1213377911874,
+          "min": -16491.21
+        },
+        "vega": {
+          "count": 43320543,
+          "max": 5696.789,
+          "mean": 348.6756480819279,
+          "min": 0.000176
+        },
+        "volume": {
+          "count": 48335273,
+          "max": 210812.0,
+          "mean": 139.1563162372125,
+          "min": 0.0
+        }
+      },
+      "row_count": 48335273
+    },
+    "security price.csv": {
+      "columns": [
+        "secid",
+        "date",
+        "cusip",
+        "ticker",
+        "sic",
+        "index_flag",
+        "exchange_d",
+        "class",
+        "issue_type",
+        "industry_group",
+        "low",
+        "high",
+        "open",
+        "close",
+        "volume",
+        "return",
+        "cfadj",
+        "shrout",
+        "cfret"
+      ],
+      "date_range": {
+        "max": "2025-08-29",
+        "min": "1996-01-02"
+      },
+      "file_name": "security price.csv",
+      "file_size_bytes": 718997,
+      "missing_counts": {
+        "cfadj": 0,
+        "cfret": 0,
+        "class": 7465,
+        "close": 0,
+        "cusip": 0,
+        "date": 0,
+        "exchange_d": 0,
+        "high": 0,
+        "index_flag": 0,
+        "industry_group": 7465,
+        "issue_type": 0,
+        "low": 0,
+        "open": 0,
+        "return": 0,
+        "secid": 0,
+        "shrout": 0,
+        "sic": 0,
+        "ticker": 0,
+        "volume": 0
+      },
+      "numeric_summary": {
+        "cfret": {
+          "count": 7465,
+          "max": 1.0,
+          "mean": 1.0,
+          "min": 1.0
+        },
+        "close": {
+          "count": 7465,
+          "max": 6501.86,
+          "mean": 2044.7380455458756,
+          "min": 598.48
+        },
+        "high": {
+          "count": 7465,
+          "max": 6508.23,
+          "mean": 2056.2639638312125,
+          "min": 602.71
+        },
+        "low": {
+          "count": 7465,
+          "max": 6466.96,
+          "mean": 2031.546073677154,
+          "min": 597.29
+        },
+        "open": {
+          "count": 7465,
+          "max": 6489.28,
+          "mean": 2044.306991292698,
+          "min": 598.48
+        },
+        "return": {
+          "count": 7465,
+          "max": 0.1158,
+          "mean": 0.000387960348292029,
+          "min": -0.119841
+        },
+        "shrout": {
+          "count": 7465,
+          "max": 0.0,
+          "mean": 0.0,
+          "min": 0.0
+        },
+        "volume": {
+          "count": 7465,
+          "max": 0.0,
+          "mean": 0.0,
+          "min": 0.0
+        }
+      },
+      "row_count": 7465
+    }
+  }
+}
