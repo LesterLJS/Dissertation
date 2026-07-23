@@ -47,14 +47,39 @@ numeric summaries. It contains no individual observations.
   [`docs/data/data_dictionary_zh.csv`](docs/data/data_dictionary_zh.csv)
 - Invented 38-column example:
   [`examples/synthetic_option_data.csv`](examples/synthetic_option_data.csv)
-- Public overview:
-  [`notebooks/dataset_overview_public.ipynb`](notebooks/dataset_overview_public.ipynb)
+- Executed English overview:
+  [`notebooks/dataset_overview_en.ipynb`](notebooks/dataset_overview_en.ipynb)
+- Executed Chinese overview:
+  [`notebooks/dataset_overview_zh.ipynb`](notebooks/dataset_overview_zh.ipynb)
 - Local meeting audit:
   [`notebooks/dataset_audit_local.ipynb`](notebooks/dataset_audit_local.ipynb)
 
 The synthetic file uses non-real identifiers, 2030 dates, ticker
 `SYNTHETIC_SPX`, and `symbol_flag=synthetic_only`. It is for demonstrating the
 schema and an illustrative volatility smile; it is not an empirical sample.
+
+## Conda environment
+
+The reproducible environment is declared in
+[`environment.yml`](environment.yml) and is named `dissertation-display`.
+Create and open it with:
+
+```bash
+conda env create -f environment.yml
+conda activate dissertation-display
+jupyter lab
+```
+
+The two public notebooks are committed with safe executed outputs. To rebuild
+and execute them:
+
+```bash
+python3 scripts/build_dataset_notebooks.py
+DATASET_NOTEBOOK_LANGUAGE=en conda run -n dissertation-display \
+  jupyter execute notebooks/dataset_overview_en.ipynb --inplace
+DATASET_NOTEBOOK_LANGUAGE=zh conda run -n dissertation-display \
+  jupyter execute notebooks/dataset_overview_zh.ipynb --inplace
+```
 
 ## Reproducing the aggregate profile
 
@@ -82,12 +107,6 @@ headers and scans in bounded batches. It does not retain observations or print
 rows. On the development machine, profiling all four files took about
 four-and-a-half minutes.
 
-Rebuild the two notebooks after changing their source generator:
-
-```bash
-python3 scripts/build_dataset_notebooks.py
-```
-
 ## Five-minute supervisor presentation
 
 1. **Research provenance — 30 seconds.** State that the study uses licensed
@@ -98,15 +117,17 @@ python3 scripts/build_dataset_notebooks.py
    joins through `secid` and `date`.
 4. **Quality — 60 seconds.** Use the aggregate profile to discuss sample size,
    missingness, and selected variable ranges.
-5. **Safe example — 45 seconds.** Run
-   `notebooks/dataset_overview_public.ipynb` and show the synthetic option
-   schema and illustrative smile.
-6. **Real-data check — 60 seconds.** On the authorised local machine only, run
-   `notebooks/dataset_audit_local.ipynb` and temporarily preview five rows from
-   each table.
+5. **Safe example — 45 seconds.** Open
+   `notebooks/dataset_overview_en.ipynb` or
+   `notebooks/dataset_overview_zh.ipynb` and show its saved aggregate tables
+   and synthetic volatility smile.
+6. **Real-data check — 60 seconds.** On the authorised local machine only,
+   open `.local-notebooks/dataset_audit_with_output.ipynb` to show five rows
+   from each table.
 
-After the meeting, clear every output in the local audit notebook before
-saving. Never commit its real-row preview.
+`notebooks/dataset_audit_local.ipynb` is the output-free tracked template.
+The executed `.local-notebooks/dataset_audit_with_output.ipynb` contains
+licensed rows and must never be uploaded.
 
 ## Suggested citation
 
@@ -125,11 +146,12 @@ licence or the institution's required attribution.
 Run the repository checks with:
 
 ```bash
-python3 -m unittest discover -s tests -v
-python3 -m json.tool notebooks/dataset_overview_public.ipynb >/dev/null
+conda run -n dissertation-display python -m unittest discover -s tests -v
+python3 -m json.tool notebooks/dataset_overview_en.ipynb >/dev/null
+python3 -m json.tool notebooks/dataset_overview_zh.ipynb >/dev/null
 python3 -m json.tool notebooks/dataset_audit_local.ipynb >/dev/null
 ```
 
-The tests verify schema coverage, synthetic-data markers, cleared notebook
-outputs, repository-relative paths, and exclusion of raw datasets, PDFs, and
-ZIP archives.
+The tests verify schema coverage, synthetic-data markers, safe public outputs,
+an output-free local template, repository-relative paths, and exclusion of raw
+datasets, local meeting outputs, PDFs, and ZIP archives.

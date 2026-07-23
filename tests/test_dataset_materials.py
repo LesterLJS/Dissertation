@@ -339,12 +339,16 @@ class RepositorySafetyTest(unittest.TestCase):
 
     def test_bilingual_guides_link_every_presentation_artifact(self):
         required_paths = [
+            "environment.yml",
+            "dissertation-display",
             "docs/data/dataset_profile.json",
             "docs/data/data_dictionary_en.csv",
             "docs/data/data_dictionary_zh.csv",
             "examples/synthetic_option_data.csv",
-            "notebooks/dataset_overview_public.ipynb",
+            "notebooks/dataset_overview_en.ipynb",
+            "notebooks/dataset_overview_zh.ipynb",
             "notebooks/dataset_audit_local.ipynb",
+            ".local-notebooks/dataset_audit_with_output.ipynb",
         ]
         for guide in (ENGLISH_GUIDE, CHINESE_GUIDE):
             with self.subTest(guide=guide.name):
