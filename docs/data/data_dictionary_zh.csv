@@ -1,0 +1,72 @@
+table,field,description,type_or_unit,dissertation_use
+Index Dividend Yield.csv,secid,OptionMetrics证券标识符,整数标识符,连接指数层面的数据表
+Index Dividend Yield.csv,date,观测日期,YYYY-MM-DD,按交易日匹配股息率
+Index Dividend Yield.csv,cusip,CUSIP证券标识符,文本标识符,核对标的身份
+Index Dividend Yield.csv,ticker,标的代码,文本标识符,筛选SPX样本
+Index Dividend Yield.csv,sic,标准行业分类代码,整数代码,说明证券元数据
+Index Dividend Yield.csv,index_flag,证券是否为指数的标志,二元标志,验证SPX标的
+Index Dividend Yield.csv,exchange_d,供应商交易所代码,整数代码,说明上市信息
+Index Dividend Yield.csv,class,证券类别,类别或空值,说明证券元数据
+Index Dividend Yield.csv,issue_type,供应商证券类型代码,类别,验证标的类型
+Index Dividend Yield.csv,industry_group,供应商行业组代码,类别或空值,说明证券元数据
+Index Dividend Yield.csv,rate,指数股息率,原始文件给出的年化百分数,作为期权定价的股息输入
+Zero Coupon Yield Curve.csv,date,收益率曲线观测日期,YYYY-MM-DD,按交易日匹配无风险利率
+Zero Coupon Yield Curve.csv,days,曲线期限,日历日,插值得到期限匹配的无风险利率
+Zero Coupon Yield Curve.csv,rate,零息利率,原始文件给出的年化百分数,作为期权定价的无风险利率输入
+option price.csv,secid,OptionMetrics标的证券标识符,整数标识符,连接期权与标的数据表
+option price.csv,date,期权报价观测日期,YYYY-MM-DD,定义定价日期
+option price.csv,symbol,供应商期权代码,文本标识符,识别期权合约
+option price.csv,symbol_flag,供应商代码状态字段,类别,记录代码质量并标识合成示例
+option price.csv,exdate,合约到期日,YYYY-MM-DD,计算剩余期限
+option price.csv,last_date,最近可用报价日期,YYYY-MM-DD,评估报价新鲜度
+option price.csv,cp_flag,看涨或看跌标志,C或P,区分期权类型
+option price.csv,strike_price,合约执行价,货币单位乘以1000,构造价内外程度
+option price.csv,best_bid,最佳收盘买价,每单位标的的货币价格,构造期权中间价
+option price.csv,best_offer,最佳收盘卖价,每单位标的的货币价格,构造期权中间价
+option price.csv,volume,日交易量,合约数,实施流动性筛选
+option price.csv,open_interest,观测日未平仓合约数,合约数,实施流动性筛选
+option price.csv,impl_volatility,供应商隐含波动率,年化小数,作为目标变量与基准
+option price.csv,delta,供应商期权Delta,价格敏感度,模型诊断与筛选
+option price.csv,gamma,供应商期权Gamma,Delta敏感度,模型诊断
+option price.csv,vega,供应商期权Vega,波动率敏感度,模型诊断
+option price.csv,theta,供应商期权Theta,时间衰减敏感度,模型诊断
+option price.csv,optionid,OptionMetrics合约标识符,整数标识符,跨日期跟踪合约
+option price.csv,cfadj,累计调整因子,数值因子,必要时调整合约条款
+option price.csv,am_settlement,供应商上午结算字段,指示变量,控制结算惯例
+option price.csv,contract_size,每张合约对应的标的单位数,单位数,必要时换算合约价值
+option price.csv,ss_flag,供应商特殊结算标志,指示变量,筛除非标准合约
+option price.csv,forward_price,供应商远期价格,每单位标的的货币价格,构造远期价内外程度
+option price.csv,expiry_indicator,供应商到期类别标志,类别,区分到期惯例
+option price.csv,root,期权根代码,文本标识符,合并相关合约
+option price.csv,suffix,期权代码后缀,文本或空值,区分合约系列
+option price.csv,cusip,标的CUSIP标识符,文本标识符,核对SPX标的
+option price.csv,ticker,标的代码,文本标识符,筛选SPX样本
+option price.csv,sic,标准行业分类代码,整数代码,说明标的元数据
+option price.csv,index_flag,标的是否为指数的标志,二元标志,验证SPX标的
+option price.csv,exchange_d,供应商交易所代码,整数代码,说明上市信息
+option price.csv,class,证券类别,类别或空值,说明标的元数据
+option price.csv,issue_type,供应商证券类型代码,类别,验证标的类型
+option price.csv,industry_group,供应商行业组代码,类别或空值,说明标的元数据
+option price.csv,issuer,标的发行人名称,文本,确认标的身份
+option price.csv,div_convention,供应商股息惯例代码,类别,记录定价惯例
+option price.csv,exercise_style,行权方式标志,美式或欧式代码,筛选合约类型
+option price.csv,am_set_flag,上午结算标志,二元标志,控制结算惯例
+security price.csv,secid,OptionMetrics证券标识符,整数标识符,连接标的与期权数据表
+security price.csv,date,标的价格观测日期,YYYY-MM-DD,按交易日匹配现货价格
+security price.csv,cusip,CUSIP证券标识符,文本标识符,核对标的身份
+security price.csv,ticker,标的代码,文本标识符,筛选SPX样本
+security price.csv,sic,标准行业分类代码,整数代码,说明证券元数据
+security price.csv,index_flag,证券是否为指数的标志,二元标志,验证SPX标的
+security price.csv,exchange_d,供应商交易所代码,整数代码,说明上市信息
+security price.csv,class,证券类别,类别或空值,说明证券元数据
+security price.csv,issue_type,供应商证券类型代码,类别,验证标的类型
+security price.csv,industry_group,供应商行业组代码,类别或空值,说明证券元数据
+security price.csv,low,每日最低指数点位,指数点,描述日内交易区间
+security price.csv,high,每日最高指数点位,指数点,描述日内交易区间
+security price.csv,open,每日开盘指数点位,指数点,描述标的市场状态
+security price.csv,close,每日收盘指数点位,指数点,作为期权定价的现货输入
+security price.csv,volume,标的日交易量,原始文件所用单位,描述市场活跃度
+security price.csv,return,标的日收益率,小数收益率,构造收益率特征
+security price.csv,cfadj,累计调整因子,数值因子,必要时调整价格
+security price.csv,shrout,流通股数或单位数,千股或供应商单位,描述标的规模
+security price.csv,cfret,收益率调整因子,数值因子,必要时调整收益率

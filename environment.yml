@@ -1,0 +1,13 @@
+name: dissertation-display
+channels:
+  - conda-forge
+dependencies:
+  - python=3.12
+  - jupyterlab
+  - ipykernel
+  - nbformat
+  - nbclient
+  - nbconvert
+  - pandas
+  - matplotlib
+  - font-ttf-noto-cjk

@@ -1,5 +1,5 @@
 # Licensed or oversized source datasets
-data/
+/data/
 
 # Reference and university-provided documents
 *.pdf
@@ -7,10 +7,17 @@ data/
 
 # Local notebook and Python artifacts
 .ipynb_checkpoints/
+notebooks/.ipynb_checkpoints/
 __pycache__/
 *.py[cod]
 .venv/
 venv/
+
+# Interrupted aggregate-profile writes
+docs/data/*.tmp
+
+# Executed notebook containing licensed real-row previews
+/.local-notebooks/
 
 # Editor and operating-system files
 .DS_Store
