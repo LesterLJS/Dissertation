@@ -14,7 +14,7 @@ The repository will include `environment.yml` defining the
 
 - Python 3.12;
 - JupyterLab and ipykernel;
-- nbformat and nbclient;
+- nbformat, nbclient, and nbconvert;
 - pandas;
 - matplotlib.
 
