@@ -133,8 +133,10 @@ PUBLIC_CODE = [
 from pathlib import Path
 import json
 import os
+import sys
 import pandas as pd
 import matplotlib.pyplot as plt
+from matplotlib import font_manager
 from IPython.display import display
 
 
@@ -187,6 +189,16 @@ LABELS = {
     },
 }
 labels = LABELS[LANGUAGE]
+if LANGUAGE == "zh":
+    cjk_font_path = Path(sys.prefix) / "fonts" / "NotoSansCJKsc-VF.ttf"
+    if not cjk_font_path.is_file():
+        raise RuntimeError(
+            "Chinese notebook requires the font-ttf-noto-cjk Conda package"
+        )
+    font_manager.fontManager.addfont(cjk_font_path)
+    cjk_font_name = font_manager.FontProperties(fname=cjk_font_path).get_name()
+    plt.rcParams["font.family"] = cjk_font_name
+    plt.rcParams["axes.unicode_minus"] = False
 profile = json.loads(
     (ROOT / "docs" / "data" / "dataset_profile.json").read_text(encoding="utf-8")
 )

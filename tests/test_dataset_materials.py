@@ -42,6 +42,7 @@ class CondaEnvironmentTest(unittest.TestCase):
             "nbconvert",
             "pandas",
             "matplotlib",
+            "font-ttf-noto-cjk",
         ):
             self.assertIn(f"  - {dependency}", content)
 
@@ -206,6 +207,71 @@ class NotebookSafetyTest(unittest.TestCase):
         self.assertTrue(all(cell.get("outputs", []) == [] for cell in code_cells))
         self.assertIn("itertools.islice(reader, 5)", code)
         self.assertIn('Path("data")', code)
+
+
+class NotebookOutputTest(unittest.TestCase):
+    def _load(self, path):
+        return json.loads(path.read_text(encoding="utf-8"))
+
+    def test_public_notebooks_have_saved_execution_outputs(self):
+        for path in (ENGLISH_NOTEBOOK, CHINESE_NOTEBOOK):
+            with self.subTest(path=path.name):
+                notebook = self._load(path)
+                code_cells = [
+                    cell for cell in notebook["cells"] if cell["cell_type"] == "code"
+                ]
+
+                self.assertTrue(code_cells)
+                self.assertTrue(
+                    all(cell.get("execution_count") is not None for cell in code_cells)
+                )
+                self.assertTrue(any(cell.get("outputs") for cell in code_cells))
+
+    def test_public_outputs_contain_no_restricted_content(self):
+        forbidden = (
+            "/Users/",
+            "098A3.1A",
+            "64881510",
+            "24.75,25.75,150,5633",
+            "data/option price.csv",
+            "api_key",
+            "client_secret",
+            "password",
+            "bearer ",
+        )
+        for path in (ENGLISH_NOTEBOOK, CHINESE_NOTEBOOK):
+            with self.subTest(path=path.name):
+                notebook = self._load(path)
+                outputs = [
+                    output
+                    for cell in notebook["cells"]
+                    if cell["cell_type"] == "code"
+                    for output in cell.get("outputs", [])
+                ]
+                encoded = json.dumps(outputs, ensure_ascii=False).lower()
+
+                for fragment in forbidden:
+                    self.assertNotIn(fragment.lower(), encoded)
+                self.assertLess(len(encoded.encode("utf-8")), 2 * 1024 * 1024)
+
+    def test_saved_output_language_matches_notebook(self):
+        english_outputs = json.dumps(
+            [
+                cell.get("outputs", [])
+                for cell in self._load(ENGLISH_NOTEBOOK)["cells"]
+            ],
+            ensure_ascii=False,
+        )
+        chinese_outputs = json.dumps(
+            [
+                cell.get("outputs", [])
+                for cell in self._load(CHINESE_NOTEBOOK)["cells"]
+            ],
+            ensure_ascii=False,
+        )
+
+        self.assertIn("All displayed option contracts are synthetic.", english_outputs)
+        self.assertIn("所有展示的期权合约均为合成记录。", chinese_outputs)
 
 
 class RepositorySafetyTest(unittest.TestCase):

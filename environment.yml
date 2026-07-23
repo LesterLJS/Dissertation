@@ -10,3 +10,4 @@ dependencies:
   - nbconvert
   - pandas
   - matplotlib
+  - font-ttf-noto-cjk
