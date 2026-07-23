@@ -1,0 +1,72 @@
+table,field,description,type_or_unit,dissertation_use
+Index Dividend Yield.csv,secid,OptionMetrics security identifier,integer identifier,Join index-level tables
+Index Dividend Yield.csv,date,Observation date,YYYY-MM-DD,Align dividend inputs by trading date
+Index Dividend Yield.csv,cusip,CUSIP security identifier,text identifier,Cross-check the underlying identity
+Index Dividend Yield.csv,ticker,Underlying ticker,text identifier,Restrict the sample to SPX
+Index Dividend Yield.csv,sic,Standard Industrial Classification code,integer code,Describe security metadata
+Index Dividend Yield.csv,index_flag,Indicator that the security is an index,binary flag,Validate the SPX underlying
+Index Dividend Yield.csv,exchange_d,Vendor exchange code,integer code,Describe listing metadata
+Index Dividend Yield.csv,class,Security class,category or blank,Describe security metadata
+Index Dividend Yield.csv,issue_type,Vendor issue-type code,category,Validate the underlying type
+Index Dividend Yield.csv,industry_group,Vendor industry-group code,category or blank,Describe security metadata
+Index Dividend Yield.csv,rate,Index dividend yield,percent per annum as delivered,Dividend input for pricing
+Zero Coupon Yield Curve.csv,date,Yield-curve observation date,YYYY-MM-DD,Align risk-free rates by trading date
+Zero Coupon Yield Curve.csv,days,Curve maturity,calendar days,Interpolate a maturity-matched risk-free rate
+Zero Coupon Yield Curve.csv,rate,Zero-coupon interest rate,percent per annum as delivered,Risk-free input for pricing
+option price.csv,secid,OptionMetrics underlying security identifier,integer identifier,Join options to underlying tables
+option price.csv,date,Option quote observation date,YYYY-MM-DD,Define the pricing date
+option price.csv,symbol,Vendor option symbol,text identifier,Identify an option contract
+option price.csv,symbol_flag,Vendor symbol-status field,category,Document symbol quality and synthetic examples
+option price.csv,exdate,Contract expiration date,YYYY-MM-DD,Calculate time to maturity
+option price.csv,last_date,Last available quote date,YYYY-MM-DD,Assess quote recency
+option price.csv,cp_flag,Call or put indicator,C or P,Separate option type
+option price.csv,strike_price,Contract strike price,currency units multiplied by 1000,Construct moneyness
+option price.csv,best_bid,Best closing bid,currency per underlying unit,Construct midpoint option price
+option price.csv,best_offer,Best closing offer,currency per underlying unit,Construct midpoint option price
+option price.csv,volume,Daily trading volume,contracts,Apply liquidity filters
+option price.csv,open_interest,Open contracts at the observation date,contracts,Apply liquidity filters
+option price.csv,impl_volatility,Vendor implied volatility,annualised decimal,Target and benchmark volatility
+option price.csv,delta,Vendor option delta,price sensitivity,Model diagnostic and filtering
+option price.csv,gamma,Vendor option gamma,delta sensitivity,Model diagnostic
+option price.csv,vega,Vendor option vega,volatility sensitivity,Model diagnostic
+option price.csv,theta,Vendor option theta,time-decay sensitivity,Model diagnostic
+option price.csv,optionid,OptionMetrics contract identifier,integer identifier,Track contracts across dates
+option price.csv,cfadj,Cumulative adjustment factor,numeric factor,Adjust contract terms when required
+option price.csv,am_settlement,Vendor AM-settlement field,indicator,Control settlement convention
+option price.csv,contract_size,Underlying units per contract,units,Convert contract values where required
+option price.csv,ss_flag,Vendor special-settlement flag,indicator,Screen non-standard contracts
+option price.csv,forward_price,Vendor forward price,currency per underlying unit,Construct forward moneyness
+option price.csv,expiry_indicator,Vendor expiration-category indicator,category,Distinguish expiry conventions
+option price.csv,root,Option root symbol,text identifier,Group related contracts
+option price.csv,suffix,Option symbol suffix,text or blank,Distinguish contract series
+option price.csv,cusip,Underlying CUSIP identifier,text identifier,Cross-check the SPX underlying
+option price.csv,ticker,Underlying ticker,text identifier,Restrict the sample to SPX
+option price.csv,sic,Standard Industrial Classification code,integer code,Describe underlying metadata
+option price.csv,index_flag,Indicator that the underlying is an index,binary flag,Validate the SPX underlying
+option price.csv,exchange_d,Vendor exchange code,integer code,Describe listing metadata
+option price.csv,class,Security class,category or blank,Describe underlying metadata
+option price.csv,issue_type,Vendor issue-type code,category,Validate the underlying type
+option price.csv,industry_group,Vendor industry-group code,category or blank,Describe underlying metadata
+option price.csv,issuer,Underlying issuer name,text,Confirm the underlying identity
+option price.csv,div_convention,Vendor dividend-convention code,category,Document pricing convention
+option price.csv,exercise_style,Exercise-style indicator,American or European code,Restrict contract style
+option price.csv,am_set_flag,AM-settlement indicator,binary flag,Control settlement convention
+security price.csv,secid,OptionMetrics security identifier,integer identifier,Join underlying and option tables
+security price.csv,date,Underlying price observation date,YYYY-MM-DD,Align spot prices by trading date
+security price.csv,cusip,CUSIP security identifier,text identifier,Cross-check the underlying identity
+security price.csv,ticker,Underlying ticker,text identifier,Restrict the sample to SPX
+security price.csv,sic,Standard Industrial Classification code,integer code,Describe security metadata
+security price.csv,index_flag,Indicator that the security is an index,binary flag,Validate the SPX underlying
+security price.csv,exchange_d,Vendor exchange code,integer code,Describe listing metadata
+security price.csv,class,Security class,category or blank,Describe security metadata
+security price.csv,issue_type,Vendor issue-type code,category,Validate the underlying type
+security price.csv,industry_group,Vendor industry-group code,category or blank,Describe security metadata
+security price.csv,low,Daily low index level,index points,Describe the trading range
+security price.csv,high,Daily high index level,index points,Describe the trading range
+security price.csv,open,Daily opening index level,index points,Describe underlying conditions
+security price.csv,close,Daily closing index level,index points,Spot input for pricing
+security price.csv,volume,Daily underlying volume,units as delivered,Describe market activity
+security price.csv,return,Daily underlying return,decimal return,Construct return-based features
+security price.csv,cfadj,Cumulative adjustment factor,numeric factor,Adjust prices when required
+security price.csv,shrout,Shares or units outstanding,thousands or vendor unit,Describe underlying scale
+security price.csv,cfret,Return adjustment factor,numeric factor,Adjust returns when required
