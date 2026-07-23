@@ -1,5 +1,5 @@
 # Licensed or oversized source datasets
-data/
+/data/
 
 # Reference and university-provided documents
 *.pdf
