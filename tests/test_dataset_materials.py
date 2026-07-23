@@ -17,11 +17,33 @@ PUBLIC_NOTEBOOK = ROOT / "notebooks" / "dataset_overview_public.ipynb"
 LOCAL_NOTEBOOK = ROOT / "notebooks" / "dataset_audit_local.ipynb"
 ENGLISH_GUIDE = ROOT / "DATASET.md"
 CHINESE_GUIDE = ROOT / "DATASET.zh-CN.md"
+CONDA_ENVIRONMENT = ROOT / "environment.yml"
 
 
 def read_dictionary(path):
     with path.open("r", encoding="utf-8", newline="") as handle:
         return list(csv.DictReader(handle))
+
+
+class CondaEnvironmentTest(unittest.TestCase):
+    def test_display_environment_declares_required_packages(self):
+        self.assertTrue(CONDA_ENVIRONMENT.is_file())
+        if not CONDA_ENVIRONMENT.is_file():
+            return
+        content = CONDA_ENVIRONMENT.read_text(encoding="utf-8")
+
+        self.assertIn("name: dissertation-display", content)
+        for dependency in (
+            "python=3.12",
+            "jupyterlab",
+            "ipykernel",
+            "nbformat",
+            "nbclient",
+            "nbconvert",
+            "pandas",
+            "matplotlib",
+        ):
+            self.assertIn(f"  - {dependency}", content)
 
 
 class DictionaryIntegrityTest(unittest.TestCase):
